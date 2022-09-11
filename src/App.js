@@ -1,5 +1,5 @@
 import { render } from "react-dom";
-
+import './style.css'
 import { StrictMode } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
