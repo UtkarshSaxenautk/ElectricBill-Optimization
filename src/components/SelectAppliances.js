@@ -5,17 +5,17 @@ import { MenuItem } from '@mui/material';
 import axios from "axios";
 
 const SelectAppliances = () => {
-
+  const [columns, setColumns] = useState([]);
+  console.log(columns);
   const [appliance, setAppliance] = useState(
     {
-      qty: '',
+      qty: 0,
       name: '',
-      type:''
+      type:'',
     }
   );
 
   const [applianceType, setApplianceType] = useState();
-
   console.log(appliance)
 
   const handelChange = (e) => {
@@ -33,23 +33,77 @@ const SelectAppliances = () => {
       }
      
     });
-    console.log(consumption.consumption)
+    console.log(consumption.consumption*appliance.qty)
     //let result = appliance.qty*applianceType;
   }
 
-  const handleAddMore = async (event) => {
-    event.preventDefault();
-  }
+
 
   const API = axios.create({ baseURL: 'http://localhost:3030/user/' });
 
+  const handleAddMore = ( ) => {
+    let consumption;
+    applianceType?.map((type) => {
+      if(type.title == appliance.type){
+        consumption = type;
+      }
+    })
+     
+
+    API.post('postshowAppliance/', {
+        // name: appliance.name,
+        // quantity:appliance.qty,
+        // brand:appliance.type,
+        name: 'bulb',
+        quantity:3,
+        brand:'Havels',
+        powerconsumption: 20
+       // powerconsumption: consumption?.consumption*appliance.qty
+      }).then((res) =>{
+        
+        const arr  = columns;
+        arr.push(res.data);
+        setColumns(arr);
+        console.log(res.data)
+      });
+  }
+
   useEffect(()=>{
+    
     API.get('appliance/'+appliance.name).then((res) =>{
       setApplianceType(res.data[0]?.brands);
       console.log(res.data[0]?.brands);
+
     });
-  },[appliance])
+
+    let consumption;
+    applianceType?.map((type) => {
+      if(type.title == appliance.type){
+        consumption = type;
+      }
+    })
+     
+
+    // API.post('postshowAppliance/', {
+    //     // name: appliance.name,
+    //     // quantity:appliance.qty,
+    //     // brand:appliance.type,
+    //     // powerconsumption: consumption?.consumption*appliance.qty
+    //     name: 'bulb',
+    //     quantity:3,
+    //     brand:'Havels',
+    //     powerconsumption: 20
+    //   }).then((res) =>{
+        
+    //     const arr  = columns;
+    //     arr.push(res.data);
+    //     setColumns(arr);
+    //     console.log(res.data)
+    //   });
+    
+  },[appliance]);
   
+
   return (
     <div className='text-center mt-10'>
       <p className='text-xl'>Select Appliances</p>
@@ -106,12 +160,12 @@ const SelectAppliances = () => {
               style ={{height : '50px', borderRadius:'15px', color : 'black'}}
             >
               <MenuItem value="" className = 'inputGeneralStyle'>
-                <em>Select Appliance Type</em>
+                <em>Select Appliance type</em>
               </MenuItem>
               {
                 applianceType?.map((type) =>{
                   return(
-                        <MenuItem value={type.title} >{type.title}</MenuItem>
+                      <MenuItem value={type.title} >{type.title}</MenuItem>
                     )
                 })
               }
@@ -121,6 +175,17 @@ const SelectAppliances = () => {
         <Box className="mb-3"><Button onClick={handleAddMore} variant="contained">Add More Appliance</Button></Box>
         <Box><Button type="submit" variant="contained" >Submit</Button></Box>
       </form>
+      {
+        columns.map(col =>{
+          return (
+            <Box>
+              {col.quantity}
+              {col.name}
+              {col.brand}
+            </Box>
+          )
+        })
+      }
     </div>
   );
 };
