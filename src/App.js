@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
 import SelectAppliances from "./components/SelectAppliances";
 import Type from "./components/Type";
+import ShowAppliances from "./components/ShowAppliances";
 
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path={"/selectappliances"} element={<SelectAppliances />} />
             <Route path={"/type"} element={<Type />} />
+            <Route path={"/show"} element={<ShowAppliances />} />
 
           </Routes>
         </BrowserRouter>
