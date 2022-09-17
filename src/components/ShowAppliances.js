@@ -26,7 +26,8 @@ const ShowAppliances = () => {
     const [bill, setBill] = useState(0);
     const [finalState, setFinalState] = useState({});
     const[errorMsg, setErrorMsg] = useState('');
-    const [response, setResponse] = useState();
+    const [response, setResponse] = useState(null);
+    const [brandData, setBrandData] = useState(null);
     console.log(response);
     const API = axios.create({ baseURL: 'http://localhost:3030/user/' });
 
@@ -47,7 +48,7 @@ const ShowAppliances = () => {
 
         API.post('/createUser', {userId: '1',user:'utkarsh', total: id, appliances: app, bill: parseInt(bill) }).then((res) =>{
             console.log(res.data.branddata);
-
+            setBrandData(res.data.branddata);
             setResponse(res.data.hours_appliance_should_decrease);
             setErrorMsg(res.data.msg);
         }).catch((e) =>{
@@ -218,10 +219,10 @@ const ShowAppliances = () => {
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell component="th" scope="row">
-                      {row.item}
+                      {row.item.toUpperCase()}
                     </TableCell>
-                    <TableCell align="right">{row.brand}</TableCell>
-                    <TableCell align="right">{row.expectedHour}</TableCell>
+                    <TableCell align="right">{row.brand.toUpperCase()}</TableCell>
+                    <TableCell align="right">{row.expectedHour.toUpperCase()}</TableCell>
                     <TableCell align="right">{row.consumption}W</TableCell>
                     <TableCell align="right"><Button variant="contained" onClick={()=> handleDelete(row.id)}>delete</Button></TableCell>
                   </TableRow>
@@ -248,17 +249,35 @@ const ShowAppliances = () => {
                 Your Bill will be optimized.
         </Alert>}
         {errorMsg === 'failed' && 
-        <Alert severity="error" className="justify-center w-9/12 m-auto pt-10" >
+        <Alert severity="error" className="justify-center w-9/12 m-auto pt-10 mb-10" >
             Bill will exceed the Budget. Please try changing the Appliances.
-            {
-                response?.map(r =>{
-                    return(
-                        <div>{r.brand}</div>
-                    )
-                })
-            }
         </Alert>
         }
+        <p className="text-3xl mb-2 font-bold">Our Recommendations</p>
+        {response !== null && <Box className="bg-lime-100 w-9/12 m-auto rounded-2xl mb-5">
+          <p className="text-2xl underline">By Changing Hour Usage</p>
+        {
+          response?.map((r,index) =>{
+              return(
+                  <div key={index}>
+                    {response && <div className="text-xl">{r.brand} Appliance is over limit by {Math.round(r.extraminutes/60)} Hours</div>}
+                  </div>
+              )
+          })
+        }
+        </Box>}
+        {brandData !== null && <Box className="bg-emerald-900 w-9/12 m-auto rounded-2xl text-white mb-20">
+        <p className="text-2xl underline">By Changing Brands of Appliance</p>
+        {
+           brandData?.map((r,index) =>{
+              return(
+                  <div key={index}>
+                    {response && <div className="text-xl">{r.brand} {r.name.toUpperCase()}</div>}
+                  </div>
+              )
+          })
+        }
+        </Box>}
       </Box>
     </div>
     );
