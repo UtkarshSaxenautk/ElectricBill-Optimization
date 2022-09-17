@@ -10,23 +10,51 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
+
 
 const ShowAppliances = () => {
-    const [final, setFinal] = useState([]);
 
     const [id, setId] = useState(0);
-    // const[quantity, setQuantity] = useState(0);
+
     const[item, setItem] = useState("");
+    console.log(item);
     const[brands, setBrands] = useState([]);
     const[brand, setBrand] = useState("");
     const[rows,setRows] = useState([]);
     const [expectedHour, setExpectedHours] = useState(0);
-    
-    console.log(rows);
+    const [bill, setBill] = useState(0);
+    const [finalState, setFinalState] = useState({});
+    const[errorMsg, setErrorMsg] = useState('');
+    const [response, setResponse] = useState();
+    console.log(response);
     const API = axios.create({ baseURL: 'http://localhost:3030/user/' });
 
+
     const handleSubmit = (e) =>{
-        console.log(e)
+        e.preventDefault();
+   
+        let app = [];
+        for (let i = 0; i < rows.length; i++) {
+            app.push({
+                id: rows[i].id,
+                name: rows[i].item,
+                brand: rows[i].brand,
+                power: rows[i].consumption,
+                expectedhour: parseInt(rows[i].expectedHour)
+            })
+          }
+
+        API.post('/createUser', {userId: '1',user:'utkarsh', total: id, appliances: app, bill: parseInt(bill) }).then((res) =>{
+            console.log(res.data.branddata);
+
+            setResponse(res.data.hours_appliance_should_decrease);
+            setErrorMsg(res.data.msg);
+        }).catch((e) =>{
+            console.log(e); 
+        })
+
+         
     }
 
     const handelHoursChange = (e) => {
@@ -41,7 +69,12 @@ const ShowAppliances = () => {
         setBrand(e.target.value)
     }
 
+    const handelBillChange = (e) =>{
+        setBill(e.target.value);
+    }
+
     const handleAddMore = () =>{
+
         const arr = [...rows];
         let consumption;
         brands?.map((type) => {
@@ -53,7 +86,7 @@ const ShowAppliances = () => {
         setId(id+1);
         arr.push({id: id, expectedHour: expectedHour, item: item, brand: brand, consumption: consumption});
         setRows(arr);
-        
+  
     }
 
     const handleDelete = (id) => {
@@ -67,9 +100,12 @@ const ShowAppliances = () => {
           setBrands(res.data[0]?.brands);
           console.log(res.data[0]?.brands);
         });
-    },[item,expectedHour,brand]);
+
+       
+
+    },[item,expectedHour,brand, finalState, errorMsg]);
       
-    
+
 
     return (
             <div className='text-center mt-10'>
@@ -77,6 +113,7 @@ const ShowAppliances = () => {
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className = 'flex justify-bewteen mt-5 mb-10'>
         <Box style={{ width: "80%", margin: "auto" }}>
+
             <Select
               className="form-input inputGeneralStyle w-11/12 text-sm md:text-lg"
               name='expectedHour'
@@ -101,18 +138,18 @@ const ShowAppliances = () => {
               <MenuItem value='10'>10</MenuItem>
               <MenuItem value='11'>11</MenuItem>
               <MenuItem value='12'>12</MenuItem>
-              <MenuItem value='1'>13</MenuItem>
-              <MenuItem value='2'>14</MenuItem>
-              <MenuItem value='3'>15</MenuItem>
-              <MenuItem value='4'>16</MenuItem>
-              <MenuItem value='5'>17</MenuItem>
-              <MenuItem value='6'>18</MenuItem>
-              <MenuItem value='7'>19</MenuItem>
-              <MenuItem value='8'>20</MenuItem>
-              <MenuItem value='9'>21</MenuItem>
-              <MenuItem value='10'>22</MenuItem>
-              <MenuItem value='11'>23</MenuItem>
-              <MenuItem value='12'>24</MenuItem>
+              <MenuItem value='13'>13</MenuItem>
+              <MenuItem value='14'>14</MenuItem>
+              <MenuItem value='15'>15</MenuItem>
+              <MenuItem value='16'>16</MenuItem>
+              <MenuItem value='17'>17</MenuItem>
+              <MenuItem value='18'>18</MenuItem>
+              <MenuItem value='19'>19</MenuItem>
+              <MenuItem value='20'>20</MenuItem>
+              <MenuItem value='21'>21</MenuItem>
+              <MenuItem value='22'>22</MenuItem>
+              <MenuItem value='23'>23</MenuItem>
+              <MenuItem value='24'>24</MenuItem>
             </Select>
           </Box>
 
@@ -188,13 +225,6 @@ const ShowAppliances = () => {
                     <TableCell align="right">{row.consumption}W</TableCell>
                     <TableCell align="right"><Button variant="contained" onClick={()=> handleDelete(row.id)}>delete</Button></TableCell>
                   </TableRow>
-                    {/* <div className="mt-5 flex" key={id} >
-                        <Typography>{row.item}</Typography>
-                        <Typography>{row.brand}</Typography>
-                        <Typography>{row.expectedHour}</Typography>
-                        <Typography>{row.consumption}</Typography>
-                        <Button variant="contained" onClick={()=> handleDelete(row.id)}>delete</Button>
-                    </div> */}
                     </>
                 )
             })}
@@ -203,9 +233,33 @@ const ShowAppliances = () => {
           </TableContainer>
         }
         </Box>
-        <Box className="mb-3 mt-5"><Button onClick={handleAddMore} variant="contained">Add More Appliance</Button></Box>
-        <Box><Button type="submit" variant="contained" >Submit</Button></Box>
+        <Box className="mt-10">
+            <label className="text-lg" >Expected Bill: </label>
+            <input className="border-2 border-slate-700 rounded-md h-10 p-2 w-24" type="text" value={bill} onChange={handelBillChange}></input>
+        </Box>
+        <Box className="mb-3 mt-5"><Button onClick={handleAddMore} variant="contained">Add Appliance</Button></Box>
+        <Box><Button type="submit" variant="contained" className="pb-10" >Submit</Button></Box>
+
+
+      
       </form>
+      <Box className="pt-10">
+            {errorMsg === 'your bill will be optimized' && <Alert severity="success" className="justify-center w-9/12 m-auto">
+                Your Bill will be optimized.
+        </Alert>}
+        {errorMsg === 'failed' && 
+        <Alert severity="error" className="justify-center w-9/12 m-auto pt-10" >
+            Bill will exceed the Budget. Please try changing the Appliances.
+            {
+                response?.map(r =>{
+                    return(
+                        <div>{r.brand}</div>
+                    )
+                })
+            }
+        </Alert>
+        }
+      </Box>
     </div>
     );
 };
